@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneWars.Api", "PhoneWars.Api\PhoneWars.Api.csproj", "{98714C4D-8782-4AE1-B790-9D67B8614FFE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{D979EE1C-8FD0-4866-823D-1DF56C08646F}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\AzureVMPublishModule.psm1 = PublishScripts\AzureVMPublishModule.psm1
+		PublishScripts\Publish-WebApplicationVM.ps1 = PublishScripts\Publish-WebApplicationVM.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{FA80C394-C95C-4359-A907-13C586993383}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Configurations\PhoneWarsApi-WAWS-dev.json = PublishScripts\Configurations\PhoneWarsApi-WAWS-dev.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98714C4D-8782-4AE1-B790-9D67B8614FFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98714C4D-8782-4AE1-B790-9D67B8614FFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98714C4D-8782-4AE1-B790-9D67B8614FFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98714C4D-8782-4AE1-B790-9D67B8614FFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FA80C394-C95C-4359-A907-13C586993383} = {D979EE1C-8FD0-4866-823D-1DF56C08646F}
+	EndGlobalSection
+EndGlobal

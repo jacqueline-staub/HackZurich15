@@ -1,0 +1,449 @@
+package com.phonewars;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Criteria;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.audiofx.LoudnessEnhancer;
+import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Vibrator;
+import android.provider.Settings;
+import android.util.Base64;
+import android.util.Log;import android.view.View;
+import android.view.View.OnClickListener;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.ListView;import android.widget.TextView;
+import android.widget.Toast;
+
+public class GameActivity extends Activity implements LocationListener{
+
+	TextView tv;
+	Button selfButton;
+	Button mapButton;
+	Button targetButton;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		toMap(null);
+
+		enableGpsIfDisabled();
+		enableWifiIdDisabled();
+
+		startListeningForLocation();
+
+		//TODO: determine hours till death
+		countdown(0.05);
+	}
+
+	private void enableWifiIdDisabled(){
+		WifiManager wifiManager = (WifiManager)this.getSystemService(Context.WIFI_SERVICE);
+		wifiManager.setWifiEnabled(true);
+	}
+
+	private void enableGpsIfDisabled(){
+		final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+		if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			startActivity(intent);
+		}
+	}
+
+	private Location lastLocation;
+	private LocationListener locListener;
+	private LocationManager locationManager;
+
+	Thread locationThread;
+
+	private void startListeningForLocation(){
+		Log.d("PhoneWars","startListeningForLocation");
+		LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+		Criteria criterion = new Criteria();
+		criterion.setAccuracy(Criteria.ACCURACY_FINE);
+
+		String provider = locationManager.getBestProvider(criterion, true);
+
+		Toast.makeText(this, provider, Toast.LENGTH_SHORT);
+		Log.d("PhoneWars","best Provider: "+provider);
+
+		//get last known location 
+		lastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		if(lastLocation == null){
+			lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		}
+
+		//check at most every 5 seconds, when moved 1m
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, this);
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 1, this);
+
+		locationThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while(true){
+					try {
+						if (lastLocation != null){
+							GameActivity.this.runOnUiThread(new Runnable() {
+								public void run() {
+									onLocationChanged(lastLocation);
+								}
+							});
+						}
+						Thread.sleep(15000);
+
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		locationThread.start();
+	}
+
+	private void stopListeningForLocation(){
+		if(locationManager != null){
+			locationManager.removeUpdates(this);
+		}
+		locationThread.stop();
+	}
+
+	private void loadButtonReferences(){
+		selfButton = (Button)findViewById(R.id.toSelf);
+		mapButton = (Button)findViewById(R.id.toMap);
+		targetButton = (Button)findViewById(R.id.toTarget);
+		tv = (TextView)findViewById(R.id.textView1);
+	}
+
+	boolean mapLoaded = false;
+
+	private void loadMapIfNotLoaded(Location location){
+		if(mapLoaded){
+			//only load map once
+			return;
+		}
+		Log.d("PhoneWars","loadMap");
+		tv.setText("loadMap");
+		if(map != null){
+			map.getSettings().setJavaScriptEnabled(true);
+			map.setWebViewClient(new WebViewClient());
+			Log.d("PhoneWars","do load Map");
+			map.loadUrl("http://phonewars.azurewebsites.net/map/index?lat="+location.getLatitude()+"&lng="+location.getLongitude()+"&"+Game.getPlayerId());
+			mapLoaded = true;
+		}
+	}
+
+	public void toMap(View view){
+		Log.d("PhoneWars","toMap");
+		if(mapLayout == null){
+			setContentView(R.layout.activity_map);
+			mapLayout = (RelativeLayout) findViewById(R.id.mapLayout);
+		}else{
+			setContentView(mapLayout);
+		}
+
+		loadButtonReferences();
+		lastLocation = null;
+		if(lastLocation!= null){
+			loadMapIfNotLoaded(lastLocation);
+		}
+		if(map == null){
+			map = (WebView)findViewById(R.id.map);
+		}
+	}
+
+	WebView map = null;
+	RelativeLayout.LayoutParams params;
+
+	RelativeLayout mapLayout;
+
+	public void toTarget(View view){
+		Log.d("PhoneWars","toTarget");
+		//RelativeLayout mainLayout = (RelativeLayout) findViewById(R.id.targetLayout);
+		setContentView(R.layout.activity_target);
+		loadButtonReferences();
+
+		try {
+			JSONObject victim = Game.state.getJSONObject("Victim");
+			String vNickname = victim.getString("Nickname");
+			String vHAddress = victim.getString("HomeAddress");
+			String vWAddress = victim.getString("WorkAddress");
+			String vPhone = victim.getString("Phone");
+			String vMail = victim.getString("Email");
+			int vLevel = victim.getInt("Level");
+			String vImage = victim.getString("Image");
+
+			setValues(vNickname, vHAddress, vWAddress, vPhone, vMail, vLevel, vImage);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void setValues(String vNickname, String vHAddress, String vWAddress, String vPhone, String vMail, int vLevel, String vImage) {
+		TextView nick = (TextView)findViewById(R.id.textView6);
+		TextView hadr = (TextView)findViewById(R.id.textView5);
+		TextView wadr = (TextView)findViewById(R.id.textView4);
+		TextView phone = (TextView)findViewById(R.id.textView3);
+		TextView mail = (TextView)findViewById(R.id.textView2);
+		TextView level = (TextView)findViewById(R.id.textView1);
+		ImageView img = (ImageView)findViewById(R.id.imageView1);
+		
+		nick.setText("Nickname: "+vNickname);
+		hadr.setText("Home address: "+vHAddress);
+		wadr.setText("Work address: "+vWAddress);
+		phone.setText("Phone: "+vPhone);
+		mail.setText("E-Mail: "+vMail);
+		level.setText("Level: "+vLevel);
+		
+		byte[] data;
+		try {
+			byte[] decodedString = Base64.decode(vImage, Base64.DEFAULT);
+			Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+			Drawable d = new BitmapDrawable(getResources(), bitmap);
+			img.setImageDrawable(d);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void loadGameState(String playerId) {
+
+		try {
+			JSONObject result = MyHttpConnection.get(this, "http://phonewars.azurewebsites.net/api/getgamedata?playerId=" + playerId);
+			if (result != null) {
+				Game.state = result;
+				Toast.makeText(this, "Game state successfully loaded", Toast.LENGTH_SHORT).show();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	//load history for statistics
+	private void loadGameHistory() {
+
+		try {
+			JSONObject result = MyHttpConnection.get(this, "http://phonewars.azurewebsites.net/api/getgamehistory");
+			if (result != null) {
+				Game.history = result;
+				Toast.makeText(this, "Game history successfully loaded", Toast.LENGTH_SHORT).show();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void toSelf(View view){
+		Log.d("PhoneWars","toSelf");
+		//load history
+		loadGameHistory();		setContentView(R.layout.activity_self);
+		loadButtonReferences();
+
+		//access values from JSON object and append them to values
+		try {
+			JSONArray arr =  Game.history.getJSONArray("History");
+			int numberOfElements = arr.length();
+
+			ListView list;
+			String[] itemname = new String[numberOfElements];
+			Drawable[] imgid= new Drawable[numberOfElements];//Integer[]
+
+			for (int i = 0; i < numberOfElements; i++) {//arr.length()
+				JSONObject o = arr.getJSONObject(i);
+
+				//get Message
+				String hist = o.getString("Message");
+				itemname[i] = hist;
+
+				//getImage
+				String im = o.getString("Image");
+				if(im!=null){
+					byte[] decodedString = Base64.decode(im, Base64.DEFAULT);
+					Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+					Drawable d = new BitmapDrawable(getResources(), bitmap);
+					imgid[i] = d;
+				}else{
+					Drawable myIcon = getResources().getDrawable( R.drawable.ic_launcher2 );
+					imgid[i] = myIcon;
+				}
+
+			}
+
+			CustomListAdapter adapter=new CustomListAdapter(this, itemname, imgid);
+			list=(ListView)findViewById(R.id.list);
+			list.setAdapter(adapter);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void openGotcha(View view){
+		Log.d("PhoneWars","open gotcha");
+		final Dialog gotcha = new Dialog(this);
+		gotcha.setContentView(R.layout.activity_gotcha);
+		Button dismissButton = (Button) gotcha.findViewById(R.id.dismissButtonGotcha);
+
+		dismissButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.d("PhoneWars","dismiss gotcha");
+				gotcha.dismiss();
+			}
+		});
+		gotcha.show();
+	}
+
+	public void openRules(View view){
+		Log.d("PhoneWars","open rules");
+		final Dialog rules = new Dialog(this);
+		rules.setContentView(R.layout.popup_rules);
+		Button dismissButton = (Button) rules.findViewById(R.id.dismissButton);
+
+		dismissButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.d("PhoneWars","dismiss rules");
+				rules.dismiss();
+			}
+		});
+		rules.show();
+	}
+
+	//vibrate for duration milliseconds
+	private void startVibrating(long duration){
+		Log.d("PhoneWars","start vibrating");
+		Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+		v.vibrate(duration);
+	}
+
+	//Location Listener methods
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+	}
+	@Override
+	public void onProviderEnabled(String provider) {
+	}
+	@Override
+	public void onProviderDisabled(String provider) {
+	}
+	@Override
+	public void onLocationChanged(Location location) {
+		if(location == null){
+			Log.d("PhoneWars","on Location Changed: location is null");
+		}else{
+			Log.d("PhoneWars","on Location Changed: lat="+location.getLatitude()+", lng="+location.getLongitude() );
+			if(!mapLoaded){
+				loadMapIfNotLoaded(location);
+			}
+		}
+		if(map == null){
+			Log.d("PhoneWars","on Location Changed: mapWebView is null");
+			return;
+		}
+
+		if(lastLocation == null){
+			loadMapIfNotLoaded(location);
+		}else{
+			JSONObject request = new JSONObject();
+			try {
+				request.put("PlayerId", Game.getPlayerId());
+				request.put("Lat", location.getLatitude());
+				request.put("Lng", location.getLongitude());
+
+				Log.d("PhoneWars","update ownPosition");
+				map.loadUrl("javascript:positionSelf("+location.getLatitude()+", "+location.getLongitude()+", 'Me', '"+Game.getPlayerId()+"');");
+
+				JSONObject response = MyHttpConnection.post(this, request, "http://phonewars.azurewebsites.net/api/updatelocation");
+				if(response != null){
+					if(!response.isNull("HunterLocation")){
+						double lat = response.getJSONObject("HunterLocation").getDouble("Lat");
+						double lng = response.getJSONObject("HunterLocation").getDouble("Lng");
+						map.loadUrl("javascript:positionHunter("+lat+", "+lng+", 'Hunter', '"+Game.getHunterId()+"');");
+						Log.d("PhoneWars","update Hunter positinon" );
+
+					}
+					if(!response.isNull("VictimLocation")){
+						double lat = response.getJSONObject("VictimLocation").getDouble("Lat");
+						double lng = response.getJSONObject("VictimLocation").getDouble("Lng");
+						map.loadUrl("javascript:positionVictim("+lat+", "+lng+", 'Victim', '"+Game.getVictimId()+"');");
+						Log.d("PhoneWars","update Victim positinon" );
+					}
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+
+		lastLocation = location;
+		TextView tv = (TextView)findViewById(R.id.textView1);
+		if(location != null && tv != null){
+			tv.setText("long: "+location.getLongitude()+" lat: "+location.getLatitude());
+		}else if (tv != null){
+			tv.setText("null");
+		}
+	}
+
+	//count down
+	private void countdown(double hours){	
+		Log.d("PhoneWars","start countdown" );
+		long duration = Math.round(hours*3600000);
+		final CounterClass timer = new CounterClass(duration, 1000);
+		timer.start();
+	}
+
+	public class CounterClass extends CountDownTimer{
+
+		public CounterClass(long millisInFuture, long countDownInterval) {
+			super(millisInFuture, countDownInterval);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void onTick(long millisUntilFinished) {
+			// TODO Auto-generated method stub
+			long millis = millisUntilFinished;
+			String hms = String.format("Time till death: %02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis), 
+					TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), 
+					TimeUnit.MILLISECONDS.toSeconds(millis)- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+			TextView ttd = (TextView)findViewById(R.id.ttd);
+			if(ttd != null){
+				ttd.setText(hms);
+			}
+		}
+
+		@Override
+		public void onFinish() {
+			Log.d("PhoneWars","times up" );
+			// TODO ein eigenes Textview für den Countdown machen!
+			TextView ttd = (TextView)findViewById(R.id.ttd);
+			if(ttd != null){
+				ttd.setText("You died");
+			}
+		}
+	}
+}

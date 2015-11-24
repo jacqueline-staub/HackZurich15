@@ -1,0 +1,32 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Game Over"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+   <Button
+       android:id="@+id/restart"
+       android:layout_width="100dp"
+       android:layout_height="40dp"
+       android:layout_centerVertical="true"
+       android:layout_centerHorizontal="true"
+       android:background="@drawable/buttonshape"
+       android:onClick="gotcha"
+       android:shadowColor="#A8A8A8"
+       android:shadowDx="0"
+       android:shadowDy="0"
+       android:shadowRadius="5"
+       android:text="Restart"
+       android:textColor="#FFFFFF"
+       android:textSize="15sp" />
+
+</RelativeLayout>

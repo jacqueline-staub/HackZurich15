@@ -1,0 +1,170 @@
+package com.phonewars;
+
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Vibrator;
+import android.provider.Settings;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class GameActivity extends Activity implements LocationListener{
+
+	Button selfButton;
+	Button mapButton;
+	Button targetButton;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_map);
+		loadButtonReferences();
+
+		enableGpsIfDisabled();
+		startListeningForLocation();
+		
+		//TODO: determine hours till death
+		countdown(0.05);
+	}
+	private void enableGpsIfDisabled(){
+		final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+		if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			startActivity(intent);
+		}
+	}
+
+	private Location lastLocation;
+	private LocationListener locListener;
+	private LocationManager locationManager;
+
+	private void startListeningForLocation(){
+		LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+		//get last known location 
+		lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if(lastLocation == null){
+			lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		}
+		
+		//check once a second and when moved 10m
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
+	}
+
+	private void stopListeningForLocation(){
+		if(locationManager != null){
+			locationManager.removeUpdates(this);
+		}       
+	}
+
+	private void loadButtonReferences(){
+		selfButton = (Button)findViewById(R.id.toSelf);
+		mapButton = (Button)findViewById(R.id.toMap);
+		targetButton = (Button)findViewById(R.id.toTarget);
+	}
+
+	public void toMap(View view){
+		setContentView(R.layout.activity_map);
+		loadButtonReferences();
+		mapButton.setActivated(false);
+	}
+
+	public void toTarget(View view){
+		setContentView(R.layout.activity_target);
+		loadButtonReferences();
+		targetButton.setActivated(false);
+	}
+
+	public void toSelf(View view){
+		setContentView(R.layout.activity_self);
+		loadButtonReferences();
+		selfButton.setActivated(false);
+	}
+
+	public void openRules(View view){
+		final Dialog rules = new Dialog(this);
+		rules.setContentView(R.layout.popup_rules);
+		Button dismissButton = (Button) rules.findViewById(R.id.dismissButton);
+
+		dismissButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				rules.dismiss();
+			}
+		});
+		rules.show();
+	}
+	
+	//vibrate for duration milliseconds
+	private void startVibrating(long duration){
+		Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+		 v.vibrate(duration);
+	}
+
+	//Location Listener methods
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+	}
+	@Override
+	public void onProviderEnabled(String provider) {
+	}
+	@Override
+	public void onProviderDisabled(String provider) {
+	}
+	@Override
+	public void onLocationChanged(Location location) {
+		lastLocation = location;
+		TextView tv = (TextView)findViewById(R.id.textView1);
+		if(location != null){
+		tv.setText("long: "+location.getLongitude()+" lat: "+location.getLatitude());
+		}else{
+		tv.setText("null");
+		}
+	}
+	
+	private void countdown(double hours){		
+		long duration = Math.round(hours*3600000);
+		final CounterClass timer = new CounterClass(duration, 1000);
+		timer.start();
+	}
+	
+	public class CounterClass extends CountDownTimer{
+
+		public CounterClass(long millisInFuture, long countDownInterval) {
+			super(millisInFuture, countDownInterval);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void onTick(long millisUntilFinished) {
+			// TODO Auto-generated method stub
+			long millis = millisUntilFinished;
+			String hms = String.format("Time till death: %02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis), 
+					TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), 
+							TimeUnit.MILLISECONDS.toSeconds(millis)- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+			TextView ttd = (TextView)findViewById(R.id.ttd);
+			ttd.setText(hms);
+		}
+
+		@Override
+		public void onFinish() {
+			// TODO ein eigenes Textview für den Countdown machen!
+			TextView ttd = (TextView)findViewById(R.id.ttd);
+			ttd.setText("You died");
+		}
+	}
+}

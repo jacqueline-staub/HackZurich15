@@ -1,0 +1,9 @@
+package com.phonewars;
+
+import org.json.JSONObject;
+
+public class Game {
+
+	public static JSONObject state;
+	
+}

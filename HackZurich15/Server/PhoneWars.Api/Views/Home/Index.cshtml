@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model PhoneWars.Api.Controllers.MainModel
+
+@foreach (var stats in Model.Stats)
+{
+    <div style="float:left;width:200px;height:220px;">
+        <img src="@stats.ImageUrl" />
+        <h3>@stats.Nickname</h3>
+        <p>Level: @stats.Level</p>
+        <p>Is hunting: @stats.VictimName</p>
+        <p>Is hunted by: @stats.HunterName</p>
+
+    </div>
+}
+<div style="clear:both;"></div>

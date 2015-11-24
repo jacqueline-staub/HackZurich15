@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PhoneWars</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_game">GameActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="action_settings">Settings</string>
+    <string name="toSelf">Statistics</string>
+    <string name="toTarget">Target</string>
+    <string name="toMap">Map</string>
+    
+    <string name="titleSelf">Statistics</string>
+    <string name="titleTarget">"Your target"</string>
+    <string name="titleMap">Map</string>
+    <string name="titleRules">Rules</string>
+
+</resources>

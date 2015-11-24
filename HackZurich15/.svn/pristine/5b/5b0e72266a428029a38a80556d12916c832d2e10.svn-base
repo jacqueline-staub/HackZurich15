@@ -1,0 +1,33 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:onClick="toRegistration"
+        android:text="NEXT" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button1"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Don't let the troll into your bed \n
+he'll take your soul then eat your head \n
+inside the honey hollow space \n
+licking his fingertips of cake \n
+\n
+Welcome to TBD!\n
+This is an interactive Android App, which allows you \n
+to hunt other people close to you. But beware: \n
+Soon some hunter might want to catch you too..." />
+
+</RelativeLayout>

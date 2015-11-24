@@ -1,0 +1,11 @@
+http://phonewars.azurewebsites.net/help
+
+HttpResponse<JsonNode> jsonResponse = Unirest.get("http://phonewars.azurewebsites.net/api/getgamedata")
+  .queryString("playerID", "560f37826ac31a15849b5bd6")
+  .asJson();
+
+
+http://phonewars.azurewebsites.net/map/index?lat=47.3667&lng=8.55
+
+javascript:positionVictim(47.3667, 8.55, 'Victim was last seen 18:45')
+javascript:positionHunter(47.3667, 8.55, 'Victim was last seen 18:45')

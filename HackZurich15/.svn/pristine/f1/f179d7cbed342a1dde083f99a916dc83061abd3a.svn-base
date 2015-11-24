@@ -1,0 +1,5 @@
+http://phonewars.azurewebsites.net/help
+
+HttpResponse<JsonNode> jsonResponse = Unirest.get("http://phonewars.azurewebsites.net/api/getgamedata")
+  .queryString("playerID", "560f37826ac31a15849b5bd6")
+  .asJson();

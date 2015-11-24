@@ -1,0 +1,65 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+    
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Gotcha"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    
+    <Button
+        android:id="@+id/okay"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="gotcha"
+        android:text="Verify" 
+        
+        android:layout_width="100dp"
+		android:layout_height="40dp"
+		android:textColor="#FFFFFF"
+		android:textSize="15sp"
+		android:background="@drawable/buttonshape"
+		android:shadowColor="#A8A8A8"
+		android:shadowDx="0"
+		android:shadowDy="0"
+		android:shadowRadius="5"  
+        />/>
+
+    
+    
+      <ImageView
+          android:id="@+id/image"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_above="@+id/okay"
+          android:layout_alignParentLeft="true"
+          android:layout_below="@+id/title"
+          android:onClick="takePicture"
+          android:src="@drawable/user" />
+
+      <EditText
+          android:id="@+id/code"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignBottom="@+id/image"
+          android:layout_alignParentRight="true"
+          android:ems="10" >
+
+          <requestFocus />
+      </EditText>
+
+      <TextView
+          android:id="@+id/please"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_above="@+id/code"
+          android:layout_alignParentRight="true"
+          android:text="Please enter your private code: " />
+
+</RelativeLayout>

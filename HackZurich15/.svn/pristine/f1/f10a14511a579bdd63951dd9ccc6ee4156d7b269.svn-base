@@ -1,0 +1,27 @@
+package com.phonewars;
+
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+
+public class GameOverActivity extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_game_over);
+		
+		startVibrating(1000);
+	}
+	
+	//vibrate for duration milliseconds
+		private void startVibrating(long duration){
+			Log.d("PhoneWars","start vibrating");
+			Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+			v.vibrate(duration);
+		}
+}

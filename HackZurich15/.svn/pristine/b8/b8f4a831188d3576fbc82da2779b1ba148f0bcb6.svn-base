@@ -1,0 +1,70 @@
+package com.phonewars;
+
+import android.accounts.Account;
+import android.accounts.OnAccountsUpdateListener;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.PopupWindow;
+
+public class GameActivity extends Activity {
+
+	Button selfButton;
+	Button mapButton;
+	Button targetButton;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_map);
+		loadButtonReferences();
+	}
+
+	private void loadButtonReferences(){
+		selfButton = (Button)findViewById(R.id.toSelf);
+		mapButton = (Button)findViewById(R.id.toMap);
+		targetButton = (Button)findViewById(R.id.toTarget);
+	}
+
+	public void toMap(View view){
+		setContentView(R.layout.activity_map);
+		loadButtonReferences();
+		mapButton.setActivated(false);
+	}
+
+	public void toTarget(View view){
+		setContentView(R.layout.activity_target);
+		loadButtonReferences();
+		targetButton.setActivated(false);
+	}
+
+	public void toSelf(View view){
+		setContentView(R.layout.activity_self);
+		loadButtonReferences();
+		selfButton.setActivated(false);
+	}
+
+	public void openRules(View view){
+		final Dialog rules = new Dialog(this);
+		rules.setContentView(R.layout.popup_rules);
+		Button dismissButton = (Button) rules.findViewById(R.id.dismissButton);
+
+		dismissButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				rules.dismiss();
+			}
+		});
+		rules.show();
+	}
+
+}
