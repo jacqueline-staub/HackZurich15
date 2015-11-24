@@ -1,1 +1,3 @@
 # HackZurich15
+
+2015 I participated at HackZurich for the first time in a group with Ruben Kaelin and Bastian Kaelin. We wrote a location-based android game which was originally invented as "StreetWars". A player can register with his profile picture, his name as well as his address. Then he is assigned a victim. This way every player has a victim as well as a hunter to whom he is the victim. The player has to catch his victim within a week and must not be caught by his hunter in order to get to the next level and everything starts over. We implemented this game on a mobile platform for android phones. These phones require an internet connection as well as a GPS signal.
